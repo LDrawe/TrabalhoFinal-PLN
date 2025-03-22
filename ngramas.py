@@ -54,6 +54,7 @@ def ngramas(n, sent):
 
 unigramas = defaultdict(int)
 bigramas = defaultdict(int)
+trigramas = defaultdict(int)
 
 for linha in sentencas:
 
@@ -65,6 +66,7 @@ for linha in sentencas:
 
     uni = ngramas(1,sent)
     bi = ngramas(2,sent)
+    tri = ngramas(3, sent)
 
     for x in uni:
         unigramas[x] += 1
@@ -72,8 +74,11 @@ for linha in sentencas:
     for x in bi:
         bigramas[x] += 1
 
-pprint.pp(unigramas)
-pprint.pp(bigramas)
+    for x in tri:
+        trigramas[x] += 1
+
+# pprint.pp(unigramas)
+# pprint.pp(bigramas)
 
 def prob_uni(x):
     V = len(vocab)
@@ -84,6 +89,10 @@ def prob_bi(x):
     V = len(vocab)
     return ((bigramas[x] + 1) / (unigramas[(x[0],)] + V))
 
+def prob_tri(x):
+    V = len(vocab)
+    return (trigramas[x] + 1) / (bigramas[(x[0], x[1])] + V)
+
 def prever(palavra):
     candidatos = [ch for ch in bigramas.keys() if ch[0] == palavra]
     
@@ -93,7 +102,38 @@ def prever(palavra):
     ordem = sorted(candidatos, key=prob_bi, reverse=True)
     return ordem[0][1]
 
-print(prever('menina'))
-print(prever('gosta'))
-print(prever('gato'))
+# print(prever('menina'))
+# print(prever('gosta'))
+# print(prever('chuva'))
 
+def prever_trigrama(palavra1, palavra2):
+    candidatos = [ch for ch in trigramas.keys() if ch[0] == palavra1 and ch[1] == palavra2]
+    
+    if not candidatos:
+        return '<s>'
+    
+    ordem = sorted(candidatos, key=prob_tri, reverse=True)
+    return ordem[0][2]
+
+def prever_top2_tri(palavra):
+    candidatos = [ch for ch in trigramas.keys() if ch[0] == palavra]
+
+    if not candidatos:
+        return ['<s>', '<s>']  # Retorna um marcador neutro caso não haja trigramas conhecidos
+
+    # Ordena os candidatos pela probabilidade do trigrama
+    ordem = sorted(candidatos, key=prob_tri, reverse=True)
+
+    # Retorna as duas palavras mais prováveis ou menos, se houver menos de 2 opções
+    return [ordem[i][1:] for i in range(min(2, len(ordem)))]
+
+pprint.pp(trigramas)
+
+print(prever_trigrama('menino', 'joga'))
+print(prever_trigrama('gosta', 'de'))
+print(prever_trigrama('todos', 'os'))
+
+# Testando a predição
+print(prever_top2_tri('menino'))
+print(prever_top2_tri('gosta'))
+print(prever_top2_tri('todos'))
