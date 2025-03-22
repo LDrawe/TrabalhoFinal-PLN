@@ -93,7 +93,7 @@ def prob_tri(x):
     V = len(vocab)
     return (trigramas[x] + 1) / (bigramas[(x[0], x[1])] + V)
 
-def prever(palavra):
+# def prever(palavra):
     candidatos = [ch for ch in bigramas.keys() if ch[0] == palavra]
     
     if not candidatos:
@@ -115,25 +115,25 @@ def prever_trigrama(palavra1, palavra2):
     ordem = sorted(candidatos, key=prob_tri, reverse=True)
     return ordem[0][2]
 
-def prever_top2_tri(palavra):
-    candidatos = [ch for ch in trigramas.keys() if ch[0] == palavra]
+def prever(palavra):
+    # Tenta prever as duas palavras mais prováveis com o trigrama
+    candidatos_tri = [ch for ch in trigramas.keys() if ch[0] == palavra]
 
-    if not candidatos:
-        return ['<s>', '<s>']  # Retorna um marcador neutro caso não haja trigramas conhecidos
+    if candidatos_tri:
+        ordem = sorted(candidatos_tri, key=prob_tri, reverse=True)
+        return [ordem[i][1:] for i in range(min(2, len(ordem)))]
 
-    # Ordena os candidatos pela probabilidade do trigrama
-    ordem = sorted(candidatos, key=prob_tri, reverse=True)
+    # Caso não haja previsão para trigrama, tenta com o bigrama
+    candidatos_bi = [ch for ch in bigramas.keys() if ch[0] == palavra]
 
-    # Retorna as duas palavras mais prováveis ou menos, se houver menos de 2 opções
-    return [ordem[i][1:] for i in range(min(2, len(ordem)))]
+    if candidatos_bi:
+        ordem = sorted(candidatos_bi, key=prob_bi, reverse=True)
+        return [ordem[i][1] for i in range(min(2, len(ordem)))]
 
-pprint.pp(trigramas)
+    # Se não houver previsão para nenhum dos dois, retorna uma mensagem de erro
+    return ["Nenhuma previsão disponível."]
 
-print(prever_trigrama('menino', 'joga'))
-print(prever_trigrama('gosta', 'de'))
-print(prever_trigrama('todos', 'os'))
+inputUsuario = input("Digite palavras para a previsão: ")
+palavras = prever(inputUsuario)
 
-# Testando a predição
-print(prever_top2_tri('menino'))
-print(prever_top2_tri('gosta'))
-print(prever_top2_tri('todos'))
+print(' | '.join([palavra for tupla in palavras for palavra in tupla if '<DES>' not in palavra]))
