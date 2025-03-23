@@ -3,54 +3,66 @@ import re
 from collections import defaultdict
 
 def leitura(nome):
-    with open(nome, 'r', encoding='utf-8') as arq:
-        return arq.read()
+    arq = open(nome,'r')
+    texto = arq.read()
+    arq.close()
+    return texto
 
 def limpar(lista):
-    lixo = r'[.,:;?!"\'(){}\[\]\/|#$%^&*-]'
-    return [re.sub(lixo, '', x).lower() for x in lista if re.sub(lixo, '', x).isalpha()]
+	lixo='.,:;?!"\'()[]{}/|#$%^&*-'
+	quase_limpo = [x.strip(lixo).lower() for x in lista]
+	return [x for x in quase_limpo if x.isalpha() or '-' in x]
 
 corpus_base = leitura('corpus_bruto.txt')
-corpus_pont = re.sub(r'[!?\.]', '#', corpus_base)
-corpus = [s.strip() for s in corpus_pont.split('#') if s.strip()]
+corpus_pont = re.sub(r'!|\?|\.', '#', corpus_base)
+corpus = corpus_pont.split('#')
 
-sentencas = [['<s>'] + limpar(s.split()) + ['</s>'] for s in corpus]
+if '\n' in corpus:
+    corpus.remove('\n')
 
-with open('corpus_preparado.txt', 'w', encoding='utf-8') as arq:
-    for s in sentencas:
-        arq.write(' '.join(s) + '\n')
+sentencas = [ ['<s>'] + limpar(s.split()) + ['</s>'] for s in corpus]
 
-with open('corpus_preparado.txt', 'r', encoding='utf-8') as arq:
-    sentencas = arq.readlines()
+arq = open('corpus_preparado.txt','w')
+for s in sentencas:
+    arq.write(' '.join(s) +'\n')
+arq.close()
+
+arq = open('corpus_preparado.txt','r')
+sentencas = arq.readlines()
+arq.close()
 
 corte = int(len(sentencas) * 0.8)
-treino, teste = sentencas[:corte], sentencas[corte:]
+treino = sentencas[:corte]
+teste = sentencas[corte:]
 
-#Construção do modelo
-with open('corpus_treino.txt', 'w') as arq:
-    arq.writelines(treino)
+arq = open('corpus_treino.txt','w')
+for s in treino:
+    arq.write(s)
+arq.close()
 
-with open('corpus_teste.txt', 'w') as arq:
-    arq.writelines(teste)
-
-with open('corpus_treino.txt', 'r') as arq:
-    sentencas = arq.readlines()
+arq = open('corpus_teste.txt','w')
+for s in teste:
+    arq.write(s)
+arq.close()
 
 vocab = set()
+contagens = defaultdict(int)
 
 for linha in sentencas:
-    contagens = defaultdict(int)
     sent = linha.split()
     for palavra in sent:
         vocab |= {palavra}
         contagens[palavra] += 1
 
-hapax = {p for p in contagens if contagens[p] == 1}
+hapax = [ p for p in contagens.keys() if contagens[p] == 1]
 vocab -= set(hapax)
 vocab |= {'<DES>'}
 
+print('Vocabulario:', vocab)
+print('Hapax:', hapax)
+
 def ngramas(n, sent):
-    return [tuple(sent[i:i+n]) for i in range(len(sent) - n + 1)]
+    return[tuple(sent[i:i+n]) for i in range(len(sent) - n + 1)]
 
 unigramas = defaultdict(int)
 bigramas = defaultdict(int)
@@ -61,7 +73,7 @@ for linha in sentencas:
     sent = linha.split()
 
     for i in range(len(sent)):
-        if sent[i] in hapax:  # Apenas substituir se não estiver no vocab
+        if sent[i] in hapax:
             sent[i] = '<DES>'
 
     uni = ngramas(1,sent)
@@ -79,6 +91,7 @@ for linha in sentencas:
 
 # pprint.pp(unigramas)
 # pprint.pp(bigramas)
+# pprint.pp(trigramas)
 
 def prob_uni(x):
     V = len(vocab)
@@ -93,47 +106,32 @@ def prob_tri(x):
     V = len(vocab)
     return (trigramas[x] + 1) / (bigramas[(x[0], x[1])] + V)
 
-# def prever(palavra):
-    candidatos = [ch for ch in bigramas.keys() if ch[0] == palavra]
+def prever(frase):
+    palavras = frase.split()
     
-    if not candidatos:
-        return '<s>'  # Retorna um marcador neutro caso não haja bigramas conhecidos
+    # Tentar primeiro prever trigramas
+    if len(palavras) >= 2:
+        trigramas_candidatos = [(trigramas[(palavras[-2], palavras[-1], w)], w) for w in vocab if (palavras[-2], palavras[-1], w) in trigramas]
+        if trigramas_candidatos:
+            trigramas_candidatos.sort(reverse=True)
+            return [w for _, w in trigramas_candidatos[:3]]
 
-    ordem = sorted(candidatos, key=prob_bi, reverse=True)
-    return ordem[0][1]
+    # Se nao caiu no return acima, tentar prever bigramas
+    if len(palavras) >= 1:
+        bigramas_candidatos = [(bigramas[(palavras[-1], w)], w) for w in vocab if (palavras[-1], w) in bigramas]
+        if bigramas_candidatos:
+            bigramas_candidatos.sort(reverse=True)
+            return [w for _, w in bigramas_candidatos[:3]]
 
-# print(prever('menina'))
-# print(prever('gosta'))
-# print(prever('chuva'))
-
-def prever_trigrama(palavra1, palavra2):
-    candidatos = [ch for ch in trigramas.keys() if ch[0] == palavra1 and ch[1] == palavra2]
-    
-    if not candidatos:
-        return '<s>'
-    
-    ordem = sorted(candidatos, key=prob_tri, reverse=True)
-    return ordem[0][2]
-
-def prever(palavra):
-    # Tenta prever as duas palavras mais prováveis com o trigrama
-    candidatos_tri = [ch for ch in trigramas.keys() if ch[0] == palavra]
-
-    if candidatos_tri:
-        ordem = sorted(candidatos_tri, key=prob_tri, reverse=True)
-        return [ordem[i][1:] for i in range(min(2, len(ordem)))]
-
-    # Caso não haja previsão para trigrama, tenta com o bigrama
-    candidatos_bi = [ch for ch in bigramas.keys() if ch[0] == palavra]
-
-    if candidatos_bi:
-        ordem = sorted(candidatos_bi, key=prob_bi, reverse=True)
-        return [ordem[i][1] for i in range(min(2, len(ordem)))]
-
-    # Se não houver previsão para nenhum dos dois, retorna uma mensagem de erro
     return ["Nenhuma previsão disponível."]
 
-inputUsuario = input("Digite palavras para a previsão: ")
-palavras = prever(inputUsuario)
+inputUsuario = ""
+while inputUsuario != '!sair':
+    inputUsuario = input("Digite uma palavra para a previsão: ").strip().lower()
 
-print(' | '.join([palavra for tupla in palavras for palavra in tupla if '<DES>' not in palavra]))
+    if inputUsuario != '!sair':
+        previsao = prever(inputUsuario)
+        if isinstance(previsao, list):
+            print(" | ".join(previsao))
+        else:
+            print(previsao)

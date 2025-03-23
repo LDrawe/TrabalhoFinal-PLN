@@ -1,9 +1,20 @@
-<s> o gato gosta de dormir na cadeira o cachorro gosta de brincar com o gato </s>
-<s> a menina gosta de cafe e de pao </s>
-<s> o menino joga bola no parque todos os dias </s>
-<s> o sol brilha forte durante o verao </s>
-<s> a lua brilha no ceu todas as noites </s>
-<s> os passaros cantam pela manha bem cedo </s>
-<s> a chuva molha as plantas no jardim </s>
-<s> o vento sopra as folhas das arvores no outono </s>
-<s> as criancas brincam no jardim durante o dia </s>
+<s> o gato gosta de dormir no </s>
+<s> o cachorro gosta de brincar no jardim </s>
+<s> a menina adora ler livros de aventura </s>
+<s> o menino joga futebol no parque </s>
+<s> a prepara o jantar para a </s>
+<s> o pai conserta o carro na garagem </s>
+<s> o sol brilha forte durante o </s>
+<s> a lua ilumina o durante a noite </s>
+<s> os cantam pela </s>
+<s> as brincam no playground </s>
+<s> o professor ensina na escola </s>
+<s> a enfermeira cuida dos pacientes no hospital </s>
+<s> o gato e o cachorro brincam juntos </s>
+<s> a menina gosta de desenhar e pintar </s>
+<s> o menino adora assistir filmes de </s>
+<s> a chuva cai suavemente no telhado </s>
+<s> o vento as no quintal </s>
+<s> as flores desabrocham na primavera </s>
+<s> o cachorro late alto para o carteiro </s>
+<s> o gato mia para pedir comida </s>

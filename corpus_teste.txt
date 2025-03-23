@@ -1,3 +1,6 @@
-<s> o gato e o cachorro gostam de brincar juntos </s>
-<s> a menina gosta de brincar com as criancas no parque </s>
-<s> o sol brilha durante o dia e esquenta o verao </s>
+<s> o sol se pãµe no horizonte ao final do dia </s>
+<s> a menina toma da com a </s>
+<s> o menino bebe suco de laranja no </s>
+<s> a faz bolo de chocolate para o lanche </s>
+<s> o pai lãª o jornal na varanda </s>
+<s> </s>
