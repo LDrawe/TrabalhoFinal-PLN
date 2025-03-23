@@ -15,33 +15,26 @@ def limpar(lista):
     quase_limpo = [x.strip(lixo).lower() for x in lista]
     return [x for x in quase_limpo if x.isalpha() or '-' in x]
 
-# Leitura do corpus
 corpus_base = leitura('corpus_bruto.txt')
 sentencas_brutas = sent_tokenize(corpus_base, language='portuguese')
 
-# Preparação das sentenças
 sentencas = [['<s>'] + limpar(word_tokenize(s)) + ['</s>'] for s in sentencas_brutas]
 
-# Escrita do corpus preparado
 with open('corpus_preparado.txt', 'w', encoding='utf-8') as arq:
     for s in sentencas:
         arq.write(' '.join(s) + '\n')
 
-# Leitura do corpus preparado
 with open('corpus_preparado.txt', 'r', encoding='utf-8') as arq:
     sentencas = arq.readlines()
 
-# Divisão em treino e teste
 corte = int(len(sentencas) * 0.8)
 treino = sentencas[:corte]
 teste = sentencas[corte:]
 
-# Escrita do corpus de treino
 with open('corpus_treino.txt', 'w', encoding='utf-8') as arq:
     for s in treino:
         arq.write(s)
-
-# Escrita do corpus de teste
+    
 with open('corpus_teste.txt', 'w', encoding='utf-8') as arq:
     for s in teste:
         arq.write(s)
@@ -55,12 +48,9 @@ for linha in sentencas:
         vocab |= {palavra}
         contagens[palavra] += 1
 
-hapax = [p for p in contagens.keys() if contagens[p] == 1]
+hapax = [ p for p in contagens.keys() if contagens[p]== 1]
 vocab -= set(hapax)
-vocab.add('<DES>')
-
-print('Vocabulario:', vocab)
-print('Hapax:', hapax)
+vocab |= {'<DES>'}
 
 def ngramas(n, sent):
     return [tuple(sent[i:i+n]) for i in range(len(sent) - n + 1)]
@@ -119,9 +109,9 @@ def prever(frase):
     return ["Nenhuma previsão disponível."]
 
 inputUsuario = ""
-while inputUsuario != '!sair':
-    inputUsuario = input("Digite uma palavra para a previsão: ").strip().lower()
+while inputUsuario != '#':
+    inputUsuario = input("Digite uma palavra para a previsão: (Para finalizar, digite #)").strip().lower()
 
-    if inputUsuario != '!sair':
+    if inputUsuario != '#':
         previsao = prever(inputUsuario)
         print(" | ".join(previsao))
