@@ -1,6 +1,5 @@
-<s> o sol se p�e no horizonte ao final do dia </s>
-<s> a menina toma da com a </s>
-<s> o menino bebe suco de laranja no </s>
-<s> a faz bolo de chocolate para o lanche </s>
-<s> o pai l� o jornal na varanda </s>
-<s> </s>
+<s> o sol se põe no horizonte ao final do dia </s>
+<s> a menina toma café da manhã com a família </s>
+<s> o menino bebe suco de laranja no almoço </s>
+<s> a mãe faz bolo de chocolate para o lanche </s>
+<s> o pai lê o jornal na varanda </s>
